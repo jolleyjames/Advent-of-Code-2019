@@ -47,7 +47,7 @@ def partX(f, phases, path, debug=False):
     max_sig = None
     max_phase = None
     for phase in permutations(phases):
-        sig = f(program, phase)
+        sig = f(program, phase, debug=debug)
         if max_sig is None or sig > max_sig:
             max_sig = sig
             max_phase = phase

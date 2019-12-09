@@ -145,6 +145,13 @@ class TestDay05(unittest.TestCase):
         '''
         self.assertEqual(d.part2('day05/input.txt'), 11826654)
         
+    def test_relative(self):
+        '''Added for Day 9 extension of Intcode introducing relative mode.
+        Testing programs that use relative mode extensions of existing opcodes.
+        '''
+        program = d.read_program('day05/test10.txt')
+        self.assertEqual(d.run_program(program).out, deque([9,18,1,1]))
+        
 if __name__ == '__main__':
     unittest.main()
     

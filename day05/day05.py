@@ -6,7 +6,7 @@ Created on Thu Dec  5 12:37:36 2019
 @author: jim
 """
 
-from operator import add, mul
+from operator import add, mul, lt, eq
 from collections import deque
 
 class Computer:
@@ -22,13 +22,13 @@ class Computer:
         
     def get_op_and_modes(self):
         '''Return an iterable of the current opcode and the parameter modes.'''
-        op = self.ram[self.ip] % 100
-        param = self.ram[self.ip] // 100
+        op = self.ram.get(self.ip,0) % 100
+        param = self.ram.get(self.ip,0) // 100
         p = ()
-        if op in (1,2,3,4,5,6,7,8):
+        if op in (1,2,3,4,5,6,7,8,9):
             if op in (1,2,7,8):
                 p_count = 3
-            elif op in (3,4):
+            elif op in (3,4,9):
                 p_count = 1
             elif op in (5,6):
                 p_count = 2
@@ -40,22 +40,31 @@ class Computer:
         op, *modes = self.get_op_and_modes()
         if op in (1,2):
             if modes[0] == 0:
-                arg0 = self.ram[self.ram[self.ip+1]]
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0),0)
             elif modes[0] == 1:
-                arg0 = self.ram[self.ip+1]
+                arg0 = self.ram.get(self.ip+1,0)
+            elif modes[0] == 2:
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[0]}')
             if modes[1] == 0:
-                arg1 = self.ram[self.ram[self.ip+2]]
+                arg1 = self.ram.get(self.ram.get(self.ip+2,0),0)
             elif modes[1] == 1:
-                arg1 = self.ram[self.ip+2]
+                arg1 = self.ram.get(self.ip+2,0)
+            elif modes[1] == 2:
+                arg1 = self.ram.get(self.ram.get(self.ip+2,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[1]}')
             # add or multiply?
             f = add if op == 1 else mul
             # "Parameters that an instruction writes to will **never be in
             # immediate mode.**"
-            self.ram[self.ram[self.ip+3]] = f(arg0,arg1)
+            if modes[2] == 0:
+                self.ram[self.ram.get(self.ip+3,0)] = f(arg0,arg1)
+            elif modes[2] == 2:
+                self.ram[self.ram.get(self.ip+3,0)+self.rb] = f(arg0,arg1)
+            else:
+                raise ValueError(f'illegal paramter mode {modes[2]}')
             # next instruction
             self.ip += 4
         elif op == 3:
@@ -63,79 +72,84 @@ class Computer:
             if self.in_:
                 # "Parameters that an instruction writes to will **never be in
                 # immediate mode.**"
-                self.ram[self.ram[self.ip+1]] = self.in_.popleft()
+                if modes[0] == 0:
+                    self.ram[self.ram.get(self.ip+1,0)] = self.in_.popleft()
+                elif modes[0] == 2:
+                    self.ram[self.ram.get(self.ip+1,0)+self.rb] = self.in_.popleft()
+                else:
+                    raise ValueError(f'illegal paramter mode {modes[0]}')    
                 self.ip += 2
         elif op == 4:
             if modes[0] == 0:
-                arg0 = self.ram[self.ram[self.ip+1]]
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0),0)
             elif modes[0] == 1:
-                arg0 = self.ram[self.ip+1]
+                arg0 = self.ram.get(self.ip+1,0)
+            elif modes[0] == 2:
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[0]}')
             self.out.append(arg0)
             self.ip += 2
-        elif op == 5:
-            # jump-if-true: if p1 != 0, set ip to p2
+        elif op in (5,6):
+            # op == 5 => jump-if-true: if p1 != 0, set ip to p2
+            # op == 6 => jump-if-false: if p1 == 0, set ip to p2
             if modes[0] == 0:
-                check = self.ram[self.ram[self.ip+1]]
+                check = self.ram.get(self.ram.get(self.ip+1,0),0)
             elif modes[0] == 1:
-                check = self.ram[self.ip+1]
+                check = self.ram.get(self.ip+1,0)
+            elif modes[0] == 2:
+                check = self.ram.get(self.ram.get(self.ip+1,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[0]}')
             if modes[1] == 0:
-                new_ip = self.ram[self.ram[self.ip+2]]
+                new_ip = self.ram.get(self.ram.get(self.ip+2,0),0)
             elif modes[1] == 1:
-                new_ip = self.ram[self.ip+2]
+                new_ip = self.ram.get(self.ip+2,0)
+            elif modes[1] == 2:
+                new_ip = self.ram.get(self.ram.get(self.ip+2,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[1]}')
-            self.ip = new_ip if check != 0 else self.ip + 3
-        elif op == 6:
-            # jump-if-false: if p1 == 0, set ip to p2
+            self.ip = new_ip if ((op == 5 and check != 0) or (op == 6 and check == 0)) \
+                             else self.ip + 3
+        elif op in (7,8):
+            # op == 7 ==> less than: p3 = 1 if p1 < p2 else 0
+            # op == 8 ==> equals: p3 = 1 if p1 == p2 else 0
             if modes[0] == 0:
-                check = self.ram[self.ram[self.ip+1]]
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0),0)
             elif modes[0] == 1:
-                check = self.ram[self.ip+1]
+                arg0 = self.ram.get(self.ip+1,0)
+            elif modes[0] == 2:
+                arg0 = self.ram.get(self.ram.get(self.ip+1,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[0]}')
             if modes[1] == 0:
-                new_ip = self.ram[self.ram[self.ip+2]]
+                arg1 = self.ram.get(self.ram.get(self.ip+2,0),0)
             elif modes[1] == 1:
-                new_ip = self.ram[self.ip+2]
+                arg1 = self.ram.get(self.ip+2,0)
+            elif modes[1] == 2:
+                arg1 = self.ram.get(self.ram.get(self.ip+2,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[1]}')
-            self.ip = new_ip if check == 0 else self.ip + 3
-        elif op == 7:
-            # less than: p3 = 1 if p1 < p2 else 0
-            if modes[0] == 0:
-                arg0 = self.ram[self.ram[self.ip+1]]
-            elif modes[0] == 1:
-                arg0 = self.ram[self.ip+1]
+            f = lt if op == 7 else eq
+            # "Parameters that an instruction writes to will **never be in
+            # immediate mode.**"
+            if modes[2] == 0:
+                self.ram[self.ram.get(self.ip + 3,0)] = 1 if f(arg0,arg1) else 0
+            elif modes[2] == 2:
+                self.ram[self.ram.get(self.ip + 3,0)+self.rb] = 1 if f(arg0,arg1) else 0
             else:
-                raise ValueError(f'illegal paramter mode {modes[0]}')
-            if modes[1] == 0:
-                arg1 = self.ram[self.ram[self.ip+2]]
-            elif modes[1] == 1:
-                arg1 = self.ram[self.ip+2]
-            else:
-                raise ValueError(f'illegal paramter mode {modes[1]}')
-            self.ram[self.ram[self.ip + 3]] = 1 if arg0 < arg1 else 0
+                raise ValueError(f'illegal paramter mode {modes[2]}')
             self.ip += 4
-        elif op == 8:
-            # equals: p3 = 1 if p1 == p2 else 0
+        elif op == 9:
             if modes[0] == 0:
-                arg0 = self.ram[self.ram[self.ip+1]]
+                self.rb += self.ram.get(self.ram.get(self.ip+1,0),0)
             elif modes[0] == 1:
-                arg0 = self.ram[self.ip+1]
-            else:
-                raise ValueError(f'illegal paramter mode {modes[0]}')
-            if modes[1] == 0:
-                arg1 = self.ram[self.ram[self.ip+2]]
-            elif modes[1] == 1:
-                arg1 = self.ram[self.ip+2]
+                self.rb += self.ram.get(self.ip+1,0)
+            elif modes[0] == 2:
+                self.rb += self.ram.get(self.ram.get(self.ip+1,0)+self.rb,0)
             else:
                 raise ValueError(f'illegal paramter mode {modes[1]}')
-            self.ram[self.ram[self.ip + 3]] = 1 if arg0 == arg1 else 0
-            self.ip += 4
+            self.ip += 2
         elif op == 99:
             pass
         else:
@@ -145,7 +159,7 @@ class Computer:
             print(self)
     
     def __repr__(self):
-        return f'Computer({self.ram}, ip={self.ip}, in_={self.in_}, out={self.out})'
+        return f'Computer({self.ram}, ip={self.ip}, rb={self.rb}, in_={self.in_}, out={self.out})'
     
     def __str__(self):
         return self.__repr__()
