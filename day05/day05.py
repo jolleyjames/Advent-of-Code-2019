@@ -12,9 +12,11 @@ from collections import deque
 class Computer:
     '''Emulates the Intcode computer from Advent of Code 2019 day 5.'''
     
-    def __init__(self, ram, ip=0, in_=[], out=[]):
-        self.ram = ram
+    def __init__(self, ram, ip=0, rb=0, in_=[], out=[]):
+        # Save ram as a dict. Unused non-negative addresses are assumed to be 0
+        self.ram = {k:v for k,v in enumerate(ram)}
         self.ip = ip
+        self.rb = rb
         self.in_ = deque(in_)
         self.out = deque(out)
         

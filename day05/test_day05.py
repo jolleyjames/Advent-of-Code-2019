@@ -13,9 +13,10 @@ from collections import deque
 class TestDay05(unittest.TestCase):
     
     def test_Computer_init(self):
-        c = d.Computer([11002, 0, 100, -100, 99], 4, [7], [8,9])
-        self.assertEqual(c.ram, [11002, 0, 100, -100, 99])
+        c = d.Computer([11002, 0, 100, -100, 99], 4, 2000, [7], [8,9])
+        self.assertEqual(c.ram, {k:v for k,v in enumerate([11002, 0, 100, -100, 99])})
         self.assertEqual(c.ip, 4)
+        self.assertEqual(c.rb, 2000)
         self.assertEqual(c.in_, deque([7]))
         self.assertEqual(c.out, deque([8,9]))
         
@@ -53,7 +54,7 @@ class TestDay05(unittest.TestCase):
         # expect to run 8 instructions without fail
         for _ in range(8):
             c.step()
-        self.assertEqual(c.ram, exp_prg)
+        self.assertEqual(c.ram, {k:v for k,v in enumerate(exp_prg)})
         self.assertEqual(c.ip, 22)
         self.assertEqual(c.in_, deque())
         self.assertEqual(c.out, deque([4, 20]))
@@ -65,11 +66,11 @@ class TestDay05(unittest.TestCase):
         program = d.read_program('day05/test1.txt')
         c = d.run_program(program)
         self.assertEqual(c.ip, 4)
-        self.assertEqual(c.ram, [1002,4,3,4,99])
+        self.assertEqual(c.ram, {k:v for k,v in enumerate([1002,4,3,4,99])})
         program = d.read_program('day05/test2.txt')
         c = d.run_program(program)
         self.assertEqual(c.ip, 4)
-        self.assertEqual(c.ram, [1101,100,-1,4,99])
+        self.assertEqual(c.ram, {k:v for k,v in enumerate([1101,100,-1,4,99])})
         
     def test_compare(self):
         program = d.read_program('day05/test3.txt')
@@ -132,11 +133,18 @@ class TestDay05(unittest.TestCase):
         c = d.run_program(program, 10)
         self.assertEqual(c.out[0], 1001)
         
+    def test_part1(self):
+        '''Added for Day 9 extension of Intcode introducing relative mode.
+        Verifying that the original graded output for Day 5 remains the same.
+        '''
+        self.assertEqual(d.part1('day05/input.txt'), 7259358)
         
+    def test_part2(self):
+        '''Added for Day 9 extension of Intcode introducing relative mode.
+        Verifying that the original graded output for Day 5 remains the same.
+        '''
+        self.assertEqual(d.part2('day05/input.txt'), 11826654)
         
-        
-        
-    
 if __name__ == '__main__':
     unittest.main()
     
