@@ -19,45 +19,39 @@ class TestDay12(unittest.TestCase):
         
     def test_apply_gravity(self):
         pos = d.read_positions('day12/test1.txt')
-        vel = [[0,0,0] for p in pos]
-        exp = [[3, -1, -1],
-               [1, 3, 3],
-               [-3, 1, -3],
-               [-1, -3, 1]]
-        d.apply_gravity(pos, vel)
-        self.assertEqual(vel, exp)
+        x,y,z = d.positions_to_pv_coord_pairs(pos)
+        exp = [[-1,3],[2,1],[4,-3],[3,-1]]
+        d.apply_gravity(x)
+        self.assertEqual(x, exp)
     
     def test_apply_velocity(self):
         pos = d.read_positions('day12/test1.txt')
-        vel = [[0,0,0] for p in pos]
-        exp = [[2, -1, 1],
-               [3, -7, -4],
-               [1, -7, 5],
-               [2, 2, 0]]
-        d.apply_gravity(pos, vel)
-        d.apply_velocity(pos, vel)
-        self.assertEqual(pos, exp)
+        x,y,z = d.positions_to_pv_coord_pairs(pos)
+        exp = [[2,3],[3,1],[1,-3],[2,-1]]
+        d.apply_gravity(x)
+        d.apply_velocity(x)
+        self.assertEqual(x, exp)
 
     def test_simulate(self):
-        exp_pos = [[2, 1, -3],
-                   [1, -8, 0],
-                   [3, -6, 1],
-                   [2, 0, 4]]
-        exp_vel = [[-3, -2, 1],
-                   [-1, 1, 3],
-                   [3, 2, -3],
-                   [1, -1, -1]]
-        pos, vel = d.simulate('day12/test1.txt', 10)
-        self.assertEqual(pos, exp_pos)
-        self.assertEqual(vel, exp_vel)
+        exp_x = [[2,-3],[1,-1],[3,3],[2,1]]
+        exp_y = [[1,-2],[-8,1],[-6,2],[0,-1]]
+        exp_z = [[-3,1],[0,3],[1,-3],[4,-1]]
+        x,y,z = d.simulate('day12/test1.txt', 10)
+        self.assertEqual(x, exp_x)
+        self.assertEqual(y, exp_y)
+        self.assertEqual(z, exp_z)
         
-    def test_total_energy(self):
-        pos, vel = d.simulate('day12/test1.txt', 10)
-        self.assertEqual(d.total_energy(pos, vel), 179)
+    def test_part1(self):
+        self.assertEqual(d.part1('day12/test1.txt',10), 179)
         
-    def test_total_energy2(self):
-         pos, vel = d.simulate('day12/test2.txt', 100)
-         self.assertEqual(d.total_energy(pos, vel), 1940)
+    def test_part1_2(self):
+        self.assertEqual(d.part1('day12/test2.txt',100), 1940)
+        
+    def test_part2(self):
+        self.assertEqual(d.part2('day12/test1.txt'), 2772)
+         
+    def test_part2_2(self):
+        self.assertEqual(d.part2('day12/test2.txt'), 4686774924)
          
          
         
