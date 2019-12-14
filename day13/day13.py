@@ -25,16 +25,15 @@ def part2(path):
     score = None
     paddle = None
     ball = None
-    blocks = None
     while c.ram[c.ip] != 99:
         # when prompted for controller input, have the paddle move toward the
         # ball, if their x coordinates are different
         if c.ram[c.ip]%100 == 3:
             if paddle is None or ball is None:
                 c.in_.append(0)
-            elif paddle[0] < ball[0]:
+            elif paddle < ball:
                 c.in_.append(1)
-            elif paddle[0] > ball[0]:
+            elif paddle > ball:
                 c.in_.append(-1)
             else:
                 c.in_.append(0)
@@ -43,16 +42,10 @@ def part2(path):
             x,y,tile_id = (c.out.popleft() for _ in range(3))
             if (x,y) == (-1,0):
                 score = tile_id
-            elif tile_id == 0 and blocks is not None:
-                blocks.discard((x,y))
-            elif tile_id == 2:
-                if blocks is None:
-                    blocks = set()
-                blocks.add((x,y))
             elif tile_id == 3:
-                paddle=(x,y)
+                paddle=x
             elif tile_id == 4:
-                ball=(x,y)
+                ball=x
     return score
 
 
