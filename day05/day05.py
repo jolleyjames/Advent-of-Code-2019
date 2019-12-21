@@ -7,19 +7,30 @@ Created on Thu Dec  5 12:37:36 2019
 """
 
 from operator import add, mul, lt, eq
-from collections import deque
+from collections import deque, Sequence
 
 class Computer:
     '''Emulates the Intcode computer from Advent of Code 2019 day 5.'''
     
     def __init__(self, ram, ip=0, rb=0, in_=[], out=[]):
         # Save ram as a dict. Unused non-negative addresses are assumed to be 0
-        self.ram = {k:v for k,v in enumerate(ram)}
+        if isinstance(ram, dict):
+            self.ram = ram
+        elif isinstance(ram, Sequence):
+            self.ram = {k:v for k,v in enumerate(ram)}
+        else:
+            raise ValueError('ram must be dict or Sequence')
         self.ip = ip
         self.rb = rb
         self.in_ = deque(in_)
         self.out = deque(out)
         
+    def clone(self):
+        '''Create a copy of this Computer.'''
+        other = Computer(self.ram.copy(), self.ip, self.rb, self.in_.copy(),
+                         self.out.copy())
+        return other
+    
     def get_op_and_modes(self):
         '''Return an iterable of the current opcode and the parameter modes.'''
         op = self.ram.get(self.ip,0) % 100

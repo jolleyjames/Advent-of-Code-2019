@@ -59,6 +59,26 @@ class TestDay05(unittest.TestCase):
         self.assertEqual(c.in_, deque())
         self.assertEqual(c.out, deque([4, 20]))
         
+    def test_Computer_clone(self):
+        program = [1101, 3, 4, 0,  # add 3 and 4, store in p[0]
+                   4, 0,           # output p[0]
+                   99]             # halt
+        orig = d.Computer(program)
+        clone = orig.clone()
+        self.assertEqual(orig.ram, clone.ram)
+        self.assertEqual(orig.ip, clone.ip)
+        self.assertEqual(orig.rb, clone.rb)
+        self.assertEqual(orig.in_, clone.in_)
+        self.assertEqual(orig.out, clone.out)
+        clone.step() # add 3 and 4, store in p[0]
+        clone.step() # output p[0]
+        clone.in_.append(-1)
+        self.assertNotEqual(orig.ram[0], clone.ram[0])
+        self.assertNotEqual(orig.ip, clone.ip)
+        self.assertNotEqual(orig.in_, clone.in_)
+        self.assertNotEqual(orig.out, clone.out)
+        
+    
     def test_read_program(self):
         self.assertEqual(d.read_program('day05/test1.txt'),[1002,4,3,4,33])
         
