@@ -44,17 +44,17 @@ class TestDay16(unittest.TestCase):
         self.assertTrue(np.array_equal(d.get_matrix(12, 5), m2))
         
     
-    @unittest.skip('skipping until get_pattern verified correct')
     def test_fft(self):
-        signal = np.array([int(c) for c in '12345678'])
-        signal = d.fft(signal)
-        self.assertEqual(''.join(str(n) for n in signal), '48226158')
-        signal = d.fft(signal)
-        self.assertEqual(''.join(str(n) for n in signal), '34040438')
-        signal = d.fft(signal)
-        self.assertEqual(''.join(str(n) for n in signal), '03415518')
-        signal = d.fft(signal)
-        self.assertEqual(''.join(str(n) for n in signal), '01029498')
+        signal = np.array([int(c) for c in '12345678']).reshape(8,1)
+        matrix = d.get_matrix(8)
+        signal = d.fft(matrix,signal)
+        self.assertEqual(''.join(str(n[0]) for n in signal), '48226158')
+        signal = d.fft(matrix,signal)
+        self.assertEqual(''.join(str(n[0]) for n in signal), '34040438')
+        signal = d.fft(matrix,signal)
+        self.assertEqual(''.join(str(n[0]) for n in signal), '03415518')
+        signal = d.fft(matrix,signal)
+        self.assertEqual(''.join(str(n[0]) for n in signal), '01029498')
         
     @unittest.skip('skipping until get_pattern verified correct')
     def test_part1(self):

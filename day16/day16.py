@@ -7,7 +7,6 @@ Advent of Code 2019, day 16.
 """
 
 import numpy as np
-from scipy.sparse import coo_matrix
 
 def get_pattern(phase, start=1, end=None):
     '''Generates values in the sequence 0, 1, 0, -1, repeating each value by
@@ -25,19 +24,13 @@ def get_matrix(lensig, offset=0):
     matrix = [np.array(list(get_pattern(phase, offset+1, lensig+1))) for phase in range(offset+1, lensig+1)]
     return np.array(matrix)
     
-
-# reuse matrix in fft function, if possible
-matrix = None
-def fft(signal):
+def fft(matrix, signal):
     '''Process the signal using the Flawed Frequency Transmission algorithm.
-    signal is a numpy array of digits. Returns another string of digits.'''
-    global matrix
-    if matrix is None or matrix.shape != (len(signal),len(signal)):
-        matrix = [np.array(list(get_pattern(phase, len(signal)))) for phase in range(1, len(signal)+1)]
-        matrix = np.array(matrix)
-        matrix = coo_matrix(matrix)
-    out = matrix * np.transpose(signal)
-    return np.vectorize(lambda d: d % 10 if d >= 0 else -d % 10)(out)
+    matrix is a square matrix containing the signal codes needed for the FFT
+    calculation. signal is an n-by-1 matrix containing the signal digits to be
+    processed. Returns an n-by-1 matrix of digits.'''
+    out = matrix @ signal
+    return np.vectorize(lambda d: abs(d)%10)(out)
 
 def part1(path):
     with open(path, 'r') as fobj:
