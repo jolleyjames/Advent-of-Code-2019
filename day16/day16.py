@@ -9,12 +9,12 @@ Advent of Code 2019, day 16.
 import numpy as np
 from scipy.sparse import coo_matrix
 
-def get_pattern(phase, limit=None):
+def get_pattern(phase, start=1, end=None):
     '''Generates values in the sequence 0, 1, 0, -1, repeating each value by
     the specified phase, always skipping the first element.'''
-    n = 1
+    n = start
     values = (0,1,0,-1)
-    while limit is None or n < limit+1:
+    while end is None or n < end:
         yield values[(n%(phase*4))//phase]
         n += 1
 
