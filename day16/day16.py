@@ -18,6 +18,14 @@ def get_pattern(phase, start=1, end=None):
         yield values[(n%(phase*4))//phase]
         n += 1
 
+def get_matrix(lensig, offset=0):
+    '''Generates the matrix used by the Flawed Frequency Transmission
+    algorithm. lensig is the length of the signal; offset is the number of
+    characters until the message appears.'''
+    matrix = [np.array(list(get_pattern(phase, offset+1, lensig+1))) for phase in range(offset+1, lensig+1)]
+    return np.array(matrix)
+    
+
 # reuse matrix in fft function, if possible
 matrix = None
 def fft(signal):

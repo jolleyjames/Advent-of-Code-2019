@@ -20,6 +20,30 @@ class TestDay16(unittest.TestCase):
         self.assertEqual(list(d.get_pattern(2,4+1,12+1)), [ 0, -1, -1, 0, 0, 1, 1, 0])
         self.assertEqual(list(d.get_pattern(3,4+1,12+1)), [ 1, 0, 0, 0, -1, -1, -1, 0])
     
+    def test_get_matrix(self):
+        m1 = [[1, 0, -1, 0, 1],
+              [0, 1, 1, 0, 0],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 1, 1],
+              [0, 0, 0, 0, 1]]
+        m1 = np.array(m1)
+        self.assertTrue(np.array_equal(d.get_matrix(5), m1))
+        m2 = [[1, 0, -1, 0, 1,  0, -1, 0,  1,  0, -1,  0],
+              [0, 1,  1, 0, 0, -1, -1, 0,  0,  1,  1,  0],
+              [0, 0,  1, 1, 1,  0,  0, 0, -1, -1, -1,  0],
+              [0, 0,  0, 1, 1,  1,  1, 0,  0,  0,  0, -1],
+              [0, 0,  0, 0, 1,  1,  1, 1,  1,  0,  0,  0],
+              [0, 0,  0, 0, 0,  1,  1, 1,  1,  1,  1,  0],
+              [0, 0,  0, 0, 0,  0,  1, 1,  1,  1,  1,  1],
+              [0, 0,  0, 0, 0,  0,  0, 1,  1,  1,  1,  1],
+              [0, 0,  0, 0, 0,  0,  0, 0,  1,  1,  1,  1],
+              [0, 0,  0, 0, 0,  0,  0, 0,  0,  1,  1,  1],
+              [0, 0,  0, 0, 0,  0,  0, 0,  0,  0,  1,  1],
+              [0, 0,  0, 0, 0,  0,  0, 0,  0,  0,  0,  1]]
+        m2 = np.array(m2)[5:,5:]
+        self.assertTrue(np.array_equal(d.get_matrix(12, 5), m2))
+        
+    
     @unittest.skip('skipping until get_pattern verified correct')
     def test_fft(self):
         signal = np.array([int(c) for c in '12345678'])
