@@ -56,11 +56,15 @@ class TestDay16(unittest.TestCase):
         signal = d.fft(matrix,signal)
         self.assertEqual(''.join(str(n[0]) for n in signal), '01029498')
         
-    @unittest.skip('skipping until get_pattern verified correct')
     def test_part1(self):
         self.assertEqual(d.part1('day16/test1.txt'), '24176176')
         self.assertEqual(d.part1('day16/test2.txt'), '73745418')
         self.assertEqual(d.part1('day16/test3.txt'), '52432133')
+        
+    def test_part2(self):
+        self.assertEqual(d.part2('day16/test4.txt'), '84462026')
+        self.assertEqual(d.part2('day16/test5.txt'), '78725270')
+        self.assertEqual(d.part2('day16/test6.txt'), '53553731')
         
         
 if __name__ == '__main__':
