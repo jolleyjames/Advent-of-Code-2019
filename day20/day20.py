@@ -89,14 +89,23 @@ def get_passages(lines, z=0):
 def add_portals_to_passages(passages, portals):
     '''Add neighbors to open passages using the listed portals.'''
     portals = [[tuple(p[:2])+(0,) for p in v] for v in portals.values() if len(v) == 2]
-    #DEBUG
-    #print('portals:', portals)
     for portal in portals:
         passages[portal[0]].append(portal[1])
         passages[portal[1]].append(portal[0])
     return passages
 
-def get_distances(passages, source, dest=None):
+def add_new_floor_to_passages(passages, inner_portals, lines, z_new):
+    '''Add a new floor of passages and portals to the existing set of passages.
+    '''
+    # Add the passages from the new floor to the dictionary of passages
+    passages.update(get_passages(lines, z_new))
+    for ip in inner_portals:
+        ip, op = ip + (z_new-1,), inner_portals[ip] + (z_new,)
+        passages[ip].append(op)
+        passages[op].append(ip)
+    return passages
+
+def get_distances(passages, source, lines, dest=None, inner_portals=None):
     '''Find the minimum distances from the source to all passages in the
     supplied dict. Stop if dest is specified.'''
     dist = {source: 0}
@@ -106,10 +115,28 @@ def get_distances(passages, source, dest=None):
         x,y,z,this_dist = to_search.popleft()
         dist[(x,y,z)] = this_dist
         neighbors = passages[(x,y,z)]
+        # is this an inner portal to a new floor we haven't seen?
+        if inner_portals and len(neighbors) == 1 and tuple((x,y)) in inner_portals:
+            passages = add_new_floor_to_passages(passages, inner_portals, lines, z+1)
+            neighbors = passages[(x,y,z)]
         to_search.extend([(x_,y_,z_,this_dist+1) for x_,y_,z_ in neighbors if (x_,y_,z_) not in dist])
         if (x,y,z) == dest: break
     return dist
-        
+
+def get_inner_portals(portals):
+    '''Create a dict of inner-portal (x,y) coordinates to corresponding
+    outer-portal (x,y) coordinates'''
+    inner_portals = {}
+    for portal in portals.values():
+        if len(portal) != 2: continue
+        if portal[0][2] == 1:
+            inner_portals[portal[0][:2]] = portal[1][:2]
+        elif portal[0][2] == -1:
+            inner_portals[portal[1][:2]] = portal[0][:2]
+        else:
+            raise ValueError(f'unexpected portal direction {portal[0][2]}, must be +1 or -1')
+    return inner_portals
+
 def part1(path):
     lines = get_input(path)
     portals = get_portals(lines)
@@ -117,14 +144,22 @@ def part1(path):
     passages = add_portals_to_passages(passages, portals)
     source=portals['AA'][0][:2] + (0,)
     dest=portals['ZZ'][0][:2] + (0,)
-    #DEBUG
-    #print('passages:', passages)
-    #print('source:', source)
-    #print('dest:', dest)
-    distances = get_distances(passages, source, dest)
-    return distances[portals['ZZ'][0][:2]+(0,)]
+    distances = get_distances(passages, source, lines, dest)
+    return distances[dest]
+
+def part2(path):
+    lines = get_input(path)
+    portals = get_portals(lines)
+    passages = get_passages(lines)
+    source=portals['AA'][0][:2] + (0,)
+    dest=portals['ZZ'][0][:2] + (0,)
+    inner_portals = get_inner_portals(portals)
+    distances = get_distances(passages, source, lines, dest, inner_portals)
+    return distances[dest]
+    
 
 if __name__ == '__main__':
     print(part1('day20/input.txt'))
+    print(part2('day20/input.txt'))
 
     

@@ -10,6 +10,7 @@ import unittest
 import day20.day20 as d
 
 class TestDay20(unittest.TestCase):
+
     def test_add_to_portals(self):
         portal, portals = 'test_portal', {}
         d.add_to_portals(portals, portal, (4,3))
@@ -38,6 +39,10 @@ class TestDay20(unittest.TestCase):
     def test_part1(self):
         self.assertEqual(d.part1('day20/test1.txt'), 23)
         self.assertEqual(d.part1('day20/test2.txt'), 58)
+
+    def test_part2(self):
+        self.assertEqual(d.part2('day20/test1.txt'), 26)
+        self.assertEqual(d.part2('day20/test3.txt'), 396)
 
 if __name__ == '__main__':
     unittest.main()
