@@ -85,10 +85,26 @@ class Hub:
         Interface Controllers in this hub.'''
         return self._queue
     
+    @property
+    def idle(self):
+        '''Returns True if all computers are waiting for input, AND there is
+        a packet at address 255.'''
+        if 255 not in self.queue:
+            return False
+        for pktq in [v for k,v in self.queue.items() if k != 255]:
+            if pktq:
+                return False
+        return True
+    
     def run_next_nic(self):
         '''Get the input for the next Network Interface Controller. Apply that
         input and run it until it waits for additional input. Take the output
         and apply it to the queue.'''
+        if self.idle:
+            if 0 not in self.queue:
+                self.queue[0] = deque()
+            self.queue[0].extend(self.queue[255])
+            self.queue[255].clear()
         addr = self.addrs[self._nic_index]
         nic = self.nics[addr]
         if addr not in self.queue:
@@ -104,10 +120,13 @@ class Hub:
             addr = nic.out.popleft()
             x = nic.out.popleft()
             y = nic.out.popleft()
-            if addr not in self.queue:
-                self.queue[addr] = deque()
-            queue = self.queue[addr]
-            queue.extend((x,y))
+            if addr == 255:
+                self.queue[255] = deque((x,y))
+            else:
+                if addr not in self.queue:
+                    self.queue[addr] = deque()
+                queue = self.queue[addr]
+                queue.extend((x,y))
         self._nic_index += 1
         self._nic_index %= len(self._addrs)
         
@@ -117,7 +136,20 @@ def part1(path, size):
         hub.run_next_nic()
     return hub.queue[255][1]
 
+def part2(path, size):
+    hub = Hub(path, range(size))
+    last_y_to_0 = None
+    while True:
+        while not hub.idle:
+            hub.run_next_nic()
+        if hub.queue[255][1] == last_y_to_0:
+            return last_y_to_0
+        else:
+            last_y_to_0 = hub.queue[255][1]
+            hub.run_next_nic()
+    
+
 if __name__ == '__main__':
     print(part1('day23/input.txt', 50))
-    
+    print(part2('day23/input.txt', 50))
     
