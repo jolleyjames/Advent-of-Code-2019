@@ -13,10 +13,10 @@ class TestDay18(unittest.TestCase):
     def test_read_map(self):
         check = {(1,1):'b', (2,1):'.', (3,1):'A', (4,1):'.', (5,1):'@', (6,1):'.', (7,1):'a'}
         self.assertEqual(d.read_map('day18/test1.txt'), check)
-    
+
     def test_neighbor_coords(self):
         self.assertCountEqual(d.neighbor_coords((-4,8)), [(-4,7),(-4,9),(-3,8),(-5,8)])
-        
+    
     def test_get_neighbors(self):
         check = {}
         check[(1,1)] = set([(2,1)])
@@ -28,26 +28,47 @@ class TestDay18(unittest.TestCase):
         check[(7,1)] = set([(6,1)])
         self.assertEqual(d.get_neighbors(d.read_map('day18/test1.txt')), check)
         
-    def test_reverse_coord_dict(self):
-        check = {'b':(1,1), 'A':(3,1), '@':(5,1), 'a':(7,1)}
-        self.assertEqual(d.reverse_coord_dict(d.read_map('day18/test1.txt')), check)
+    def test_State_init(self):
+        s1 = d.State((10,99))
+        self.assertEqual(s1.pos, (10,99))
+        self.assertEqual(s1.key_bitmap, 0)
+        self.assertEqual(s1.key_set, set())
+        s2 = d.State((99,10), set('az'))
+        self.assertEqual(s2.pos, (99,10))
+        self.assertEqual(s2.key_bitmap, 33554433)
+        s3 = d.State((50,50), 56)
+        self.assertEqual(s3.pos, (50,50))
+        self.assertEqual(s3.key_set, set('def'))
         
-    def test_next_keys(self):
-        coord_to_loc = d.read_map('day18/test1.txt')
-        loc_to_coord = d.reverse_coord_dict(coord_to_loc)
-        neighbors = d.get_neighbors(coord_to_loc)
-        self.assertEqual(d.next_keys(coord_to_loc,loc_to_coord,neighbors,loc_to_coord['@']),{'a':2})
-        self.assertEqual(d.next_keys(coord_to_loc,loc_to_coord,neighbors,loc_to_coord['a'],2,'a'),{'b':8})
-        self.assertEqual(d.next_keys(coord_to_loc,loc_to_coord,neighbors,(2,1)),{'b':1})
-        self.assertEqual(d.next_keys(coord_to_loc,loc_to_coord,neighbors,loc_to_coord['b'],1,'b'),{})
+    def test_State_as_immutable(self):
+        s1 = d.State((17,42), set('abcdefghijklmnopqrstvwxyz'))
+        self.assertEqual(s1.as_immutable(), (17, 42, 66060287))
         
-        coord_to_loc = d.read_map('day18/test2.txt')
-        loc_to_coord = d.reverse_coord_dict(coord_to_loc)
-        neighbors = d.get_neighbors(coord_to_loc)
-        self.assertEqual(d.next_keys(coord_to_loc,loc_to_coord,neighbors,loc_to_coord['c'],1000,'abc'),{'e':1014, 'd':1024})
+    def test_State_add_key(self):
+        s1 = d.State((0,0))
+        s1.add_key('a')
+        self.assertEqual(s1.key_bitmap, 1)
+        s1.add_key('x')
+        self.assertEqual(s1.key_bitmap, 8388609)
         
+    def test_State_contains_key(self):
+        s1 = d.State((0,0), set('gnu'))
+        self.assertTrue(s1.contains_key('n'))
+        self.assertFalse(s1.contains_key('o'))
+    
+    def test_State_door_open(self):
+        s1 = d.State((0,0), set('unlock'))
+        self.assertTrue(s1.door_open('U'))
+        self.assertFalse(s1.door_open('V'))
+    
+    def test_part1(self):
+        self.assertTrue(d.part1('day18/test1.txt'), 8)
+        self.assertTrue(d.part1('day18/test2.txt'), 86)
+        self.assertTrue(d.part1('day18/test3.txt'), 132)
+        #self.assertTrue(d.part1('day18/test4.txt'), 136)
+        self.assertTrue(d.part1('day18/test5.txt'), 81)
         
+
 
 if __name__ == '__main__':
     unittest.main()
-    
