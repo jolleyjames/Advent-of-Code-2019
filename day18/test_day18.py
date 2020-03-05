@@ -65,10 +65,44 @@ class TestDay18(unittest.TestCase):
         self.assertTrue(d.part1('day18/test1.txt'), 8)
         self.assertTrue(d.part1('day18/test2.txt'), 86)
         self.assertTrue(d.part1('day18/test3.txt'), 132)
-        #self.assertTrue(d.part1('day18/test4.txt'), 136)
+        self.assertTrue(d.part1('day18/test4.txt'), 136)
         self.assertTrue(d.part1('day18/test5.txt'), 81)
         
-
+    def test_part2_abandoned(self):
+        self.assertTrue(d.part2_abandoned('day18/test6.txt'), 8)
+        self.assertTrue(d.part2_abandoned('day18/test7.txt'), 24)
+        self.assertTrue(d.part2_abandoned('day18/test8.txt'), 32)
+        self.assertTrue(d.part2_abandoned('day18/test9.txt'), 72)
+        
+    def test_get_distances_from_pos(self):
+        map_, neighbors, startlocs = d.part2_initialize('day18/test8.txt')
+        exp = {(4, 1, 0): 2, (2, 1, 2): 4, (1, 3, 10): 7}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (5,2), False).items())
+        exp = {(9, 1, 64): 3, (9, 3, 64+256): 5, (11, 1, 64+1024): 5}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (7,2), False).items())
+        exp = {(3, 5, 1): 3, (3, 3, 5): 5, (1, 5, 17): 5}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (5,4), False).items())
+        exp = {(9, 5, 32): 3, (11, 5, 32+128): 5, (11, 3, 32+128+512): 7}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (7,4), False).items())
+        
+        map_, neighbors, startlocs = d.part2_initialize('day18/test9.txt')
+        exp = {(4, 3, 0): 1, (3, 3, 0): 2, (1, 3, 4): 4, (1, 1, 4+32): 6, 
+               (5, 2, 0): 1, (3, 1, 8): 4}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (5,3), False).items())
+        exp = {(9, 1, 16): 4, (9, 3, 2): 2, (11, 1, 2+256+512): 6}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (7,3), False).items())
+        exp = {(1, 5, 1024+2048): 4, (1, 7, 1024+2048+4096): 6, (3, 7, 8192): 4}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (5,5), False).items())
+        exp = {(10, 7, 64): 7, (9, 7, 64): 8, (7, 7, 128): 2}
+        self.assertTrue(exp.items() <= d.get_distances_from_pos(map_, neighbors, (7,5), False).items())
+        
+    def test_part2(self):
+        self.assertTrue(d.part2('day18/test6.txt'), 8)
+        self.assertTrue(d.part2('day18/test7.txt'), 24)
+        self.assertTrue(d.part2('day18/test8.txt'), 32)
+        self.assertTrue(d.part2('day18/test9.txt'), 72)
+        
+    
 
 if __name__ == '__main__':
     unittest.main()
